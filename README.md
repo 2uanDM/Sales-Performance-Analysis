@@ -43,17 +43,16 @@ In this part, I will make use of `Power Query` inside `Power BI` to clean and tr
 
    - Although this is a DIM table that includes stores' information, the amount of attributes in this table is extremely large. That is why I decided to create more DIM tables from this one to benefit for the visualization procress later <br><br>
 
-    <center>
-
-   | Separated tables | Primary Key | Remaining attributes                                                              |
+    <p align="center"> 
+    
+    | Separated tables | Primary Key | Remaining attributes                                                              |
    | ---------------- | ----------- | --------------------------------------------------------------------------------- |
    | DimPopulation    | StoreID     | Population <br> Households <br> Median <br> Income <br> Land Area <br> Water Area |
    | DimState         | Sate Code   | State <br> Region                                                                 |
    | DimCounty        | County ID   | County Name                                                                       |
    | DimStoreTypes    | Type ID     | Type Name                                                                         |
-
-   <u>_Table 1_</u>: <t>DimStoreLocation table</t>
-    </center>
+    </p>
+    <p align = "center"> <u>Table 1</u>: DimStoreLocation table </p>
 
    After separating and changing attributes from `text` to `whole number` ID respectively, DimStoreLocations will be like this:
 
