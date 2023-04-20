@@ -6,6 +6,8 @@ In this project, I have used the dataset `sale_data.xlxs` to process, build and 
 - Identify the areas with the highest and lowest sales and find out why?
 - Identify the product with the highest and lowest sales and find out why?
 
+<u>Note:</u> The data source in `SalesPerformanceReport.pbix` is from an online source
+
 ## Dataset description
 
 In the file `sale_data.xlxs`, there are 5 tables:
