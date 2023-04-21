@@ -27,7 +27,7 @@ In the file `sale_data.xlxs`, there are 5 tables:
 
 - In the FACT table "Sales table", the current number of rows is more than 1 million lines, while only about 20 thousand lines have complete data about orders. Furthermore, some attributes in the table "Sales table" can be omitted, such as "Currency" since all values are in `USD`
 
-## Data processing (clean and transform)
+## Clean and transform data
 
 In this part, I will make use of `Power Query` inside `Power BI` to clean and tranform data
 
@@ -43,7 +43,7 @@ In this part, I will make use of `Power Query` inside `Power BI` to clean and tr
 
 3. Store Locations -> DimStoreLocation
 
-   - Although this is a DIM table that includes stores' information, the amount of attributes in this table is extremely large. That is why I decided to create more DIM tables from this one to benefit for the visualization procress later <br><br>
+   - Although this is a DIM table that includes stores' information, the amount of attributes in this table is extremely large. That is why I decided to create more DIM tables from this one to benefit the visualization process later <br><br>
    <div align="center">
 
    | Separated tables | Primary Key | Remaining attributes                                                              |
@@ -59,3 +59,87 @@ In this part, I will make use of `Power Query` inside `Power BI` to clean and tr
    After separating and changing attributes from `text` to `whole number` ID respectively, DimStoreLocations will be like this:
 
    ![image](./img/dimstorelocation.png)
+
+## Build data model
+
+The model building process will include 2 main steps:
+
+### Step 1: Connect tables
+
+<div align="center">
+
+![image](./img/star_schema.png)
+
+<u>Figure 1</u>: _Star Schema_ connection
+
+</div>
+
+In the `Modelling` tab, I have linked the tables in the form of Star Schema, with the centre being the table "FactSales", which revolves around the DIM table including: "DimProduct", "DimSalesTeam", "DimSalesChannel" and "DimStoreLocation" is linked to the FACT table with a "One to Many" relationship.
+
+### Step 2: Adding DAX formulas
+
+1. Date Hierachy
+
+Initially, in table FactSales, the "Sales Date" attribute was simply a `text` format with the date recorded in the format: `mm-dd-yyyy`. First, I will use some DAX functions to generate parts of the Date:
+
+    - Month
+    Month = FORMAT('FactSales'[Sales Date], "MMM")
+
+    - Quarter
+    Quarter = "Qtr"
+            & IF (MONTH('FactSales'[Sales Date]) <=3, 1,
+            IF (MONTH ('FactSales'[Sales Date]) <= 6, 2,
+            IF (MONTH ('FactSales'[Sales Date]) <=9,3,4)))
+
+    - Year
+    Year = YEAR ('FactSales'[Sales Date])
+
+    - Weekday
+    Weekday = FORMAT(FactSales[Sales Date], "ddd")
+
+After creating the components, I will concatenate them to form `Date Hierarchy`
+
+2. Calculation
+
+These are basic calculation measures using in my dashboard:
+
+a) Basic calculation
+
+    Average Deal Size = [Total Revenue]/[Total Transaction]
+    ---------------------------------------------------------------------------------------------------------
+    Profit Margin = DIVIDE([Total Profit], [Total Revenue])
+    ---------------------------------------------------------------------------------------------------------
+    Total Revenue = SUMX(FactSales,FactSales[Unit Price]*FactSales[Order Quantity])
+    ---------------------------------------------------------------------------------------------------------
+    Total Cost = SUMX(FactSales,FactSales[Unit Cost]*FactSales[Order Quantity])
+    ---------------------------------------------------------------------------------------------------------
+    Total Profit = SUMX(FactSales,FactSales[Unit Price]*FactSales[Order Quantity]) -
+                   SUMX(FactSales,FactSales[Unit Cost]*FactSales[Order Quantity])
+    ---------------------------------------------------------------------------------------------------------
+    Total Transaction = COUNT(FactSales[Order Number])
+
+b) Ranking
+
+I will rank the revenue/profit by these attributes: _Product, Channel, Salesteam, State and Store_
+
+For example: `Rank Revenue by SaleTeams =
+RANKX(ALL('DimSalesTeams'[Sales Team]),[Total Revenue],,DESC)`
+
+c) Time Intelligence:
+
+    Profit MTD = TOTALMTD ([Total Profit], 'FactSales'[Sales Date])
+    ---------------------------------------------------------------------------------------------------------
+    Revenue MTD = TOTALMTD ([Total Revenue],'FactSales'[Sales Date])
+    ---------------------------------------------------------------------------------------------------------
+    Sales Prior Month = CALCULATE([Total Revenue],PREVIOUSMONTH(FactSales[Sales Date].[Date])
+    ---------------------------------------------------------------------------------------------------------
+    Sales MoM Growth =
+        VAR SalesPriorMonth =
+        CALCULATE (
+            SUMX (FactSales, [Unit Price]*[Order Quantity]),
+                PARALLELPERIOD('FactSales'[Sales Date].[Date], -1, MONTH)
+        )
+        RETURN
+            DIVIDE (
+                SUMX(FactSales,[Unit Price]*[Order Quantity])-SalesPriorMonth,SalesPriorMonth
+            )
