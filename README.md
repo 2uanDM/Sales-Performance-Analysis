@@ -6,7 +6,7 @@ In this project, I have used the dataset `sale_data.xlxs` to process, build and 
 - Identify the areas with the highest and lowest sales and find out why?
 - Identify the product with the highest and lowest sales and find out why?
 
-<u>Note:</u> The data source in `SalesPerformanceReport.pbix` is from an online source
+<u>Note:</u> The data source in `SalesPerformanceReport.pbix` is got from the online version of `sale_data.xlxs`. Just open and you will be able to access all things from this report
 
 ## Dataset description
 
